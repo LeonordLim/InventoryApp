@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">InventoryApp</string>
+    <string name="editor_activity_title_Add_item">Add Item</string>
+    <string name="editor_activity_title_Edit_itme">Edit Item</string>
+    <string name="editor_update_item_failed">Update item failed</string>
+    <string name="editor_update_item_successful">Update item succesful</string>
+</resources>
