@@ -1,8 +1,10 @@
 package com.lestariinterna.inventoryapp;
 
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -15,6 +17,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -34,6 +38,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private EditText mQuantity;
 
     private Uri currentUri;
+
+    private boolean mItemHasChanged = false;
 
     // To access our database, we instantiate our subclass of SQLiteOpenHelper
     // and pass the context, which is the current activity.
@@ -66,6 +72,14 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mPrice = (EditText)findViewById(R.id.editTextHarga);
         mQuantity=(EditText)findViewById(R.id.editTextQuantity);
 
+
+        // OnTouchListener that listens for any user touches on a View, implying that they are modifying
+        // the view, and we change the mPetHasChanged boolean to true.
+        mItems.setOnTouchListener(mTouchListener);
+        mPrice.setOnTouchListener(mTouchListener);
+        mQuantity.setOnTouchListener(mTouchListener);
+
+
         mDbHelper = new InventoryDbHelper(this);
 
     }
@@ -89,8 +103,27 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 return true;
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
-                // Navigate back to parent activity (CatalogActivity)
-                NavUtils.navigateUpFromSameTask(this);
+                // If the pet hasn't changed, continue with navigating up to parent activity
+                // which is the {@link CatalogActivity}.
+                if (!mItemHasChanged) {
+                    NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                    return true;
+                }
+
+                // Otherwise if there are unsaved changes, setup a dialog to warn the user.
+                // Create a click listener to handle the user confirming that
+                // changes should be discarded.
+                DialogInterface.OnClickListener discardButtonClickListener =
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // User clicked "Discard" button, navigate to parent activity.
+                                NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                            }
+                        };
+
+                // Show a dialog that notifies the user they have unsaved changes
+                showUnsavedChangesDialog(discardButtonClickListener);
                 return true;
 
         }
@@ -108,6 +141,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String quantityString = mQuantity.getText().toString().trim();
         int quantity = Integer.parseInt(quantityString);
 
+        Log.v("Test data",itemNameString+price+quantityString);
         if (currentUri == null && TextUtils.isEmpty(itemNameString)&& TextUtils.isEmpty(priceString)&& TextUtils.isEmpty(quantityString)){
             // Since no fields were modified, we can return early without creating a new item.
             // No need to create ContentValues and no need to do any ContentProvider operations.
@@ -122,7 +156,21 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(InventoryContract.InvEntry.COLUMN_INVENTORY_QUANTITY,quantity);
 
 
-        if(currentUri != null){
+        if(currentUri == null){
+
+            Uri mUri = getContentResolver().insert(InventoryContract.CONTENT_URI, values);
+
+            // Show a toast message depending on whether or not the insertion was successful
+            if (mUri == null) {
+                // If the row ID is -1, then there was an error with insertion.
+                Toast.makeText(this, "Error with saving Inventory", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Item save with row ", Toast.LENGTH_SHORT).show();
+            }
+
+
+        }else {
+
             // Otherwise this is an EXISTING iyrm, so update the item with content URI: mCurrentPetUri
             // and pass in the new ContentValues. Pass in null for the selection and selection args
             // because mCurrentPetUri will already identify the correct row in the database that
@@ -139,27 +187,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 // Otherwise, the update was successful and we can display a toast.
                 Toast.makeText(this, getString(R.string.editor_update_item_successful),
                         Toast.LENGTH_SHORT).show();
-            }
-
-        }else {
-//
-//            //Get writeable database
-//            SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
-            // Create a ContentValues object where column names are the keys,
-            // and attributes from the editor are the values.
-
-            Uri mUri = getContentResolver().insert(InventoryContract.CONTENT_URI, values);
-
-//        // Insert a new row for pet in the database, returning the ID of that new row.
-//        long newRowId = db.insert(InventoryContract.InvEntry.TABLE_NAME, null, values);
-
-            // Show a toast message depending on whether or not the insertion was successful
-            if (mUri == null) {
-                // If the row ID is -1, then there was an error with insertion.
-                Toast.makeText(this, "Error with saving Inventory", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Item save with row ", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -213,4 +240,61 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     public void onLoaderReset(Loader<Cursor> loader) {
 
     }
+
+    // OnTouchListener that listens for any user touches on a View, implying that they are modifying
+    // the view, and we change the mPetHasChanged boolean to true.
+
+    private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            mItemHasChanged = true;
+            return false;
+        }
+    };
+
+    private void showUnsavedChangesDialog(
+            DialogInterface.OnClickListener discardButtonClickListener) {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the positive and negative buttons on the dialog.
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.unsaved_changes_dialog_msg);
+        builder.setPositiveButton(R.string.discard, discardButtonClickListener);
+        builder.setNegativeButton(R.string.keep_editing, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Keep editing" button, so dismiss the dialog
+                // and continue editing the pet.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+    @Override
+    public void onBackPressed() {
+
+        if (!mItemHasChanged) {
+            super.onBackPressed();
+            return;
+        }
+
+        // Otherwise if there are unsaved changes, setup a dialog to warn the user.
+        // Create a click listener to handle the user confirming that changes should be discarded.
+        DialogInterface.OnClickListener discardButtonClickListener =
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // User clicked "Discard" button, close the current activity.
+                        finish();
+                    }
+                };
+
+        // Show dialog that there are unsaved changes
+        showUnsavedChangesDialog(discardButtonClickListener);
+    }
+
 }

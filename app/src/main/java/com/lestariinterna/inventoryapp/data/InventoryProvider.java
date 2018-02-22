@@ -24,6 +24,7 @@ public class InventoryProvider extends ContentProvider {
     private static final int INVENTORY_ID= 101;
 
 
+
     // Creates a UriMatcher object.
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
@@ -35,6 +36,8 @@ public class InventoryProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         mDbHelper = new InventoryDbHelper(getContext());
+
+
         return true;
     }
 
@@ -132,7 +135,7 @@ public class InventoryProvider extends ContentProvider {
                 // For the PET_ID code, extract out the ID from the URI,
                 // so we know which row to update. Selection will be "_id=?" and selection
                 // arguments will be a String array containing the actual ID.
-                selection = INVENTORY_ID + "=?";
+                selection = InventoryContract.InvEntry._ID+ "=?";
                 selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
                 return updateInventory(uri, contentValues, selection, selectionArgs);
             default:
@@ -143,20 +146,25 @@ public class InventoryProvider extends ContentProvider {
     private int updateInventory(Uri uri, ContentValues contentValues, String selection, String[] selectionArgs){
         // Check that the item name is not null
         String itemName = contentValues.getAsString(InventoryContract.InvEntry.COLUMN_INVENTORY_ITEMS);
-        Log.v("Test itemnam",itemName);
+        Log.v("Test selection",selection);
         if (itemName == null) {
             throw new IllegalArgumentException("Item's name not inserted");
         }
 
 
-        Integer price = contentValues.getAsInteger(InventoryContract.InvEntry.COLUMN_INVENTORY_PRICE);
-        if (price!= null && price < 0) {
-            throw new IllegalArgumentException("Price is needed");
-        }
+//        Integer price = contentValues.getAsInteger(InventoryContract.InvEntry.COLUMN_INVENTORY_PRICE);
+//        if (price!= null && price < 0) {
+//            throw new IllegalArgumentException("Price is needed");
+//        }
+//
+//        Integer quantity = contentValues.getAsInteger(InventoryContract.InvEntry.COLUMN_INVENTORY_QUANTITY);
+//        if (quantity!= null && quantity < 0) {
+//            throw new IllegalArgumentException("Need stocks");
+//        }
 
-        Integer quantity = contentValues.getAsInteger(InventoryContract.InvEntry.COLUMN_INVENTORY_QUANTITY);
-        if (quantity!= null && quantity < 0) {
-            throw new IllegalArgumentException("Need stocks");
+        // If there are no values to update, then don't try to update the database
+        if (contentValues.size() == 0) {
+            return 0;
         }
 
         // Get writeable database
@@ -216,4 +224,6 @@ public class InventoryProvider extends ContentProvider {
         }
         return cursor;
     }
+
+
 }
