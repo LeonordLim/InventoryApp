@@ -23,7 +23,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.lestariinterna.inventoryapp.data.InventoryContract;
-import com.lestariinterna.inventoryapp.data.InventoryDbHelper;
 
 /**
  * Created by AllinOne on 31/01/2018.
@@ -39,21 +38,21 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     private Uri currentUri;
 
+    private int saleID;
+
     private boolean mItemHasChanged = false;
 
-    // To access our database, we instantiate our subclass of SQLiteOpenHelper
-    // and pass the context, which is the current activity.
-    private InventoryDbHelper mDbHelper;
+//    // To access our database, we instantiate our subclass of SQLiteOpenHelper
+//    // and pass the context, which is the current activity.
+//    private InventoryDbHelper mDbHelper;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
-
         Intent intent = getIntent();
         currentUri = intent.getData();
-
-        //if the intent Does not  contain a pet URI then we know we are creating a new item
+        //if the intent Does not  contain an Item URI then we know we are creating a new item
         if(currentUri== null){
             // This is a new pet, so change the app bar to say "Add an item"
             setTitle(R.string.editor_activity_title_Add_item);
@@ -64,8 +63,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
 
         }else {
-            setTitle(R.string.editor_activity_title_Edit_itme);
-             getLoaderManager().initLoader(0,null,this);
+            //currentUri is not null means we editting item
+            setTitle(R.string.editor_activity_title_Edit_item);
+            getLoaderManager().initLoader(0,null,this);
         }
 
         mItems = (EditText)findViewById(R.id.editTextNameItem);
@@ -74,13 +74,13 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
 
         // OnTouchListener that listens for any user touches on a View, implying that they are modifying
-        // the view, and we change the mPetHasChanged boolean to true.
+        // the view, and we change the mItemHasChanged boolean to true.
         mItems.setOnTouchListener(mTouchListener);
         mPrice.setOnTouchListener(mTouchListener);
         mQuantity.setOnTouchListener(mTouchListener);
 
 
-        mDbHelper = new InventoryDbHelper(this);
+//        mDbHelper = new InventoryDbHelper(this);
 
     }
 
@@ -100,13 +100,15 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 finish();
                 return true;
             case R.id.action_delete:
+                // Pop up confirmation dialog for deletion
+                showDeleteConfirmationDialog();
                 return true;
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
                 // If the pet hasn't changed, continue with navigating up to parent activity
                 // which is the {@link CatalogActivity}.
                 if (!mItemHasChanged) {
-                    NavUtils.navigateUpFromSameTask(EditorActivity.this);
+                    NavUtils.navigateUpFromSameTask(this);
                     return true;
                 }
 
@@ -297,4 +299,60 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         showUnsavedChangesDialog(discardButtonClickListener);
     }
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        // If this is a new pet, hide the "Delete" menu item.
+        if (currentUri== null) {
+            MenuItem menuItem = menu.findItem(R.id.action_delete);
+            menuItem.setVisible(false);
+        }
+        return true;
+    }
+    private void showDeleteConfirmationDialog() {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the postivie and negative buttons on the dialog.
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(this);
+        builder.setMessage(R.string.delete_dialog_msg);
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Delete" button, so delete the pet.
+                deletePet();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                // and continue editing the pet.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        android.support.v7.app.AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+    private void deletePet() {
+        // Only perform the delete if this is an existing pet.
+        if (currentUri != null) {
+            // Call the ContentResolver to delete the pet at the given content URI.
+            // Pass in null for the selection and selection args because the mCurrentPetUri
+            // content URI already identifies the pet that we want.
+            int rowsDeleted = getContentResolver().delete(currentUri, null, null);
+            // Show a toast message depending on whether or not the delete was successful.
+            if (rowsDeleted == 0) {
+                // If no rows were deleted, then there was an error with the delete.
+                Toast.makeText(this, getString(R.string.editor_delete_pet_failed),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                // Otherwise, the delete was successful and we can display a toast.
+                Toast.makeText(this, getString(R.string.editor_delete_pet_successful),
+                        Toast.LENGTH_SHORT).show();
+            }
+            // Close the activity
+            finish();
+        }
+    }
 }

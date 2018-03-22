@@ -1,20 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <TextView
-    android:id="@+id/name"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:fontFamily="sans-serif-medium"
-    android:textAppearance="?android:textAppearanceMedium"
-    android:textColor="#2B3D4D"  />
+    <ImageView
 
-    <TextView
-        android:id="@+id/summary"
-        android:layout_width="wrap_content"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:padding="@dimen/listImage_padding"
+        android:src="@drawable/item"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="sans-serif"
-        android:textAppearance="?android:textAppearanceSmall"
-        android:textColor="#AEB6BD" />
+        android:layout_weight="2"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/name"
+            style="@style/itemsAttributes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textColor="#2B3D4D"
+            android:text="Samsung J20"    />
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/itemsAttributes">
+
+            <TextView
+                android:id="@+id/labelHarga"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:layout_marginRight="10dp"
+                android:fontFamily="sans-serif"
+                android:textAppearance="?android:textAppearanceSmall"
+                android:text="Harga   : Rp. "
+                android:textColor="#AEB6BD"
+                android:layout_alignParentLeft="true"  />
+            <TextView
+                android:id="@+id/labelStock"
+                android:layout_below="@+id/labelHarga"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginEnd="10dp"
+                android:layout_marginRight="10dp"
+                android:fontFamily="sans-serif"
+                android:text="In Stock:"
+                android:textAppearance="?android:textAppearanceSmall"
+                android:textColor="#AEB6BD" />
+            <TextView
+                android:id="@+id/harga"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:textAppearance="?android:textAppearanceSmall"
+                tools:text="Rp. 100.000"
+                android:textColor="#AEB6BD"
+                android:layout_toRightOf="@id/labelHarga"
+                android:layout_toEndOf="@id/labelHarga"/>
+            <TextView
+                android:id="@+id/stock"
+                android:layout_below="@+id/labelHarga"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/labelStock"
+                android:layout_toEndOf="@id/labelStock"
+                android:fontFamily="sans-serif"
+                tools:text="100"
+                android:textAppearance="?android:textAppearanceSmall"
+                android:textColor="#AEB6BD" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/ButtonSale"
+        android:layout_width="50dp"
+        android:layout_gravity="center_vertical"
+        android:focusable="false"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@drawable/ic_shopping_cart_black_24dp"
+        android:drawableStart="@drawable/ic_shopping_cart_black_24dp"/>
+
+
+
 </LinearLayout>

@@ -5,14 +5,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".CatalogActivity">
 
-    <item
-        android:id="@+id/insertDummy"
-        android:title="Insert Dummy items"
-        app:showAsAction="never"
-        />
+
     <item
         android:id="@+id/deleteItem"
-        android:title="Delete an item"
+        android:title="Delete all"
         app:showAsAction="never"
 
         />

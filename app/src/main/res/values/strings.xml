@@ -1,7 +1,10 @@
 <resources>
     <string name="app_name">InventoryApp</string>
     <string name="editor_activity_title_Add_item">Add Item</string>
-    <string name="editor_activity_title_Edit_itme">Edit Item</string>
+    <string name="editor_activity_title_Edit_item">Edit Item</string>
+    <string name="editor_activity_title_Sale_item">Sale</string>
+
+
     <string name="editor_update_item_failed">Update item failed</string>
     <string name="editor_update_item_successful">Update item succesful</string>
     <!-- Dialog message when user is leaving editor but hasn't saved changes [CHAR LIMIT=NONE] -->
@@ -12,5 +15,31 @@
 
     <!-- Dialog button text for the option to keep editing the current pet [CHAR LIMIT=20] -->
     <string name="keep_editing">Keep Editing</string>
+    <!-- Toast message in editor when current pet was successfully deleted [CHAR LIMIT=NONE] -->
+    <string name="editor_delete_pet_successful">Pet deleted</string>
+
+    <!-- Toast message in editor when current pet has failed to be deleted [CHAR LIMIT=NONE] -->
+    <string name="editor_delete_pet_failed">Error with deleting pet</string>
+
+    <!-- Dialog message to ask the user to confirm deleting the current item [CHAR LIMIT=NONE] -->
+    <string name="delete_dialog_msg">Delete this item?</string>
+
+    <!-- Dialog message to ask the user to confirm deleting all items [CHAR LIMIT=NONE] -->
+    <string name="delete_all__dialog_msg">Delete all items?</string>
+
+    <!-- Dialog button text for the option to confirm deleting the current item [CHAR LIMIT=20] -->
+    <string name="delete">Delete</string>
+
+    <!-- Dialog button text for the option to cancel deletion of the current item [CHAR LIMIT=20] -->
+    <string name="cancel">Cancel</string>
+
+    <!-- Title text for the empty view, which describes the empty dog house image [CHAR LIMIT=50] -->
+    <string name="empty_view_title_text">There is nothing in here...</string>
+
+    <!-- Subtitle text for the empty view that prompts the user to add a pet [CHAR LIMIT=50] -->
+    <string name="empty_view_subtitle_text">Get started by adding an item</string>
+
+    <!-- Title text for selling button [CHAR LIMIT=50] -->
+    <string name="selling_button_text">SELL</string>
 
 </resources>

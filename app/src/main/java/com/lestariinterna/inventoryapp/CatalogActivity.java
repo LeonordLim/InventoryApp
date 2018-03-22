@@ -4,6 +4,7 @@ import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -30,22 +31,32 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
 
     private InventoryCursorAdapter adapter;
 
+    private ListView listView;
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalog);
 
 
-        ListView listView = (ListView)findViewById(R.id.list);
+       listView = (ListView)findViewById(R.id.list);
 
         adapter = new InventoryCursorAdapter(this,null);
 
         listView.setAdapter(adapter);
+        int id2 = listView.getId();
 
+        Log.v("CatalogActivity","id2= "+id2);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Uri currentUri = ContentUris.withAppendedId(InventoryContract.CONTENT_URI,id);
+                Log.v("CatalogActivity","id= "+id);
                 Intent intent = new Intent(CatalogActivity.this,EditorActivity.class);
                 intent.setData(currentUri);
                 startActivity(intent);
@@ -53,6 +64,11 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         });
 
 
+
+
+        // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
+        View emptyView = findViewById(R.id.empty_view);
+        listView.setEmptyView(emptyView);
 
         // Setup FAB to open EditorActivity
         FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
@@ -74,7 +90,6 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
     @Override
     protected void onStart() {
         super.onStart();
-       // displayDatabaseInfo();
     }
 
     /**
@@ -119,6 +134,8 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         InventoryCursorAdapter inventoryCursorAdapter = new InventoryCursorAdapter(this,cursor);
 
         listView.setAdapter(inventoryCursorAdapter);
+        cursor.close();
+
 
         // TextView displayView = (TextView) findViewById(R.id.displayDbInfo);
 
@@ -179,11 +196,9 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
          switch (item.getItemId()){
-             case R.id.insertDummy:
-                 insertDummy();
-                 displayDatabaseInfo();
-                 return true;
+
              case R.id.deleteItem:
+                 showDeleteConfirmationDialog();
                  return true;
 
          }
@@ -235,4 +250,51 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
 
 
     }
+    /**
+     * Helper method to delete all pets in the database.
+     */
+    private void deleteAllPets() {
+        int rowsDeleted = getContentResolver().delete(InventoryContract.CONTENT_URI, null, null);
+        Log.v("CatalogActivity", rowsDeleted + " rows deleted from item database");
+    }
+
+    private void showDeleteConfirmationDialog() {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the postivie and negative buttons on the dialog.
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(this);
+        builder.setMessage(R.string.delete_all__dialog_msg);
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Delete" button, so delete the pet.
+                deleteAllPets();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                // and continue editing the pet.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        android.support.v7.app.AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+//    //TODO: Decrease count by one
+//    public void decreaseCount(int columnId, int quantity){
+//
+//        quantity = quantity -1;
+//
+//        ContentValues values = new ContentValues();
+//        values.put(InventoryContract.InvEntry.COLUMN_INVENTORY_QUANTITY, quantity);
+//
+//        Uri updateUri = ContentUris.withAppendedId(InventoryContract.CONTENT_URI, columnId);
+//
+//        int rowsAffected = getContentResolver().update(updateUri, values,null, null);
+//
+//    }
 }
