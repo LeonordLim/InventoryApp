@@ -88,6 +88,9 @@ public class InventoryProvider extends ContentProvider {
         if (id == -1) {
             Log.e(LOG_TAG, "Failed to insert row for " + uri);
             return null;}
+        else {
+            getContext().getContentResolver().notifyChange(uri,null);
+        }
 
         return ContentUris.withAppendedId(uri,id);
     }
@@ -110,7 +113,7 @@ public class InventoryProvider extends ContentProvider {
                 // For the PET_ID code, extract out the ID from the URI,
                 // so we know which row to update. Selection will be "_id=?" and selection
                 // arguments will be a String array containing the actual ID.
-                selection = INVENTORY_ID+ "=?";
+                selection = InventoryContract.InvEntry._ID+ "=?";
                 selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
                 rowsDeleted = database.delete(InventoryContract.InvEntry.TABLE_NAME, selection, selectionArgs);
                 //return rowsDeleted;
@@ -144,12 +147,18 @@ public class InventoryProvider extends ContentProvider {
     }
 
     private int updateInventory(Uri uri, ContentValues contentValues, String selection, String[] selectionArgs){
-        // Check that the item name is not null
-        String itemName = contentValues.getAsString(InventoryContract.InvEntry.COLUMN_INVENTORY_ITEMS);
-        Log.v("Test selection",selection);
-        if (itemName == null) {
-            throw new IllegalArgumentException("Item's name not inserted");
+
+
+        if (contentValues.containsKey(InventoryContract.InvEntry.COLUMN_INVENTORY_ITEMS)){
+            // Check that the item name is not null
+            String itemName = contentValues.getAsString(InventoryContract.InvEntry.COLUMN_INVENTORY_ITEMS);
+            if (itemName == null) {
+                throw new IllegalArgumentException("Item's require name");
+            }
         }
+
+        Log.v("Test selection",selection);
+
 
 
 //        Integer price = contentValues.getAsInteger(InventoryContract.InvEntry.COLUMN_INVENTORY_PRICE);
@@ -222,6 +231,10 @@ public class InventoryProvider extends ContentProvider {
                 throw new IllegalArgumentException("Cannot query unknown URI "+ uri);
 
         }
+        // Set notification URI on the Cursor,
+        // so we know what content URI the Cursor was created for.
+        // If the data at this URI changes, then we know we need to update the Cursor.
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
         return cursor;
     }
 
