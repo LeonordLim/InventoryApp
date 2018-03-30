@@ -8,7 +8,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -19,9 +20,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.lestariinterna.inventoryapp.data.InventoryContract;
 import com.lestariinterna.inventoryapp.data.InventoryDbHelper;
+
+import java.io.ByteArrayOutputStream;
 
 public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -42,6 +46,16 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalog);
+        // Setup FAB to open EditorActivity
+        FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CatalogActivity.this,EditorActivity.class);
+                startActivity(intent);
+            }
+        });
 
 
        listView = (ListView)findViewById(R.id.list);
@@ -70,16 +84,7 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         View emptyView = findViewById(R.id.empty_view);
         listView.setEmptyView(emptyView);
 
-        // Setup FAB to open EditorActivity
-        FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(CatalogActivity.this,EditorActivity.class);
-                startActivity(intent);
-            }
-        });
         mDbHelper = new InventoryDbHelper(this);
 
         // Prepare the loader.  Either re-connect with an existing one,
@@ -200,6 +205,9 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
              case R.id.deleteItem:
                  showDeleteConfirmationDialog();
                  return true;
+             case R.id.insertDummy:
+                 insertDummy();
+                 return true;
 
          }
         return super.onOptionsItemSelected(item);
@@ -213,7 +221,8 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
             InventoryContract.InvEntry._ID,
             InventoryContract.InvEntry.COLUMN_INVENTORY_ITEMS,
             InventoryContract.InvEntry.COLUMN_INVENTORY_PRICE,
-            InventoryContract.InvEntry.COLUMN_INVENTORY_QUANTITY
+            InventoryContract.InvEntry.COLUMN_INVENTORY_QUANTITY,
+            InventoryContract.InvEntry.COLUMN_INVENTORY_PICTURE
 
     };
 
@@ -234,18 +243,29 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
 
     private void insertDummy(){
 
-
-        // Gets the data repository in write mode
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.ic_empty_shelter);
+        byte[] bytes = bitmapConverter(bmp);
+//        // Gets the data repository in write mode
+//        SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         // Create a new map of values, where column names are the keys
         ContentValues values = new ContentValues();
         values.put(InventoryContract.InvEntry.COLUMN_INVENTORY_ITEMS,"Samsung J2");
         values.put(InventoryContract.InvEntry.COLUMN_INVENTORY_PRICE, 3000000);
         values.put(InventoryContract.InvEntry.COLUMN_INVENTORY_QUANTITY,100);
+        values.put(InventoryContract.InvEntry.COLUMN_INVENTORY_PICTURE,bytes);
 
-        // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(InventoryContract.InvEntry.TABLE_NAME, null, values);
+//               // Insert the new row, returning the primary key value of the new row
+//        long newRowId = db.insert(InventoryContract.InvEntry.TABLE_NAME, null, values);
+        Uri mUri = getContentResolver().insert(InventoryContract.CONTENT_URI, values);
+
+        // Show a toast message depending on whether or not the insertion was successful
+        if (mUri == null) {
+            // If mUri is null then there was an error with insertion.
+            Toast.makeText(this, "Error with saving Inventory", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Item save with row ", Toast.LENGTH_SHORT).show();
+        }
 
 
 
@@ -284,7 +304,12 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
         alertDialog.show();
     }
 
-//    //TODO: Decrease count by one
+    public byte[]bitmapConverter(Bitmap bmp){
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG,100,stream);
+        byte[] bytes = stream.toByteArray();
+        return bytes;
+    }
 //    public void decreaseCount(int columnId, int quantity){
 //
 //        quantity = quantity -1;

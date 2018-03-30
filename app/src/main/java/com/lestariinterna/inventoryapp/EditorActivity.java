@@ -8,8 +8,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -19,7 +21,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.lestariinterna.inventoryapp.data.InventoryContract;
@@ -38,13 +42,25 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     private Uri currentUri;
 
-    private int saleID;
+    private ImageView mPicture;
+
+    private Button mButtonCam;
 
     private boolean mItemHasChanged = false;
 
 //    // To access our database, we instantiate our subclass of SQLiteOpenHelper
 //    // and pass the context, which is the current activity.
 //    private InventoryDbHelper mDbHelper;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            mPicture.setImageBitmap(imageBitmap);
+        }
+
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -67,10 +83,12 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             setTitle(R.string.editor_activity_title_Edit_item);
             getLoaderManager().initLoader(0,null,this);
         }
-
+        //instantiate edit text components
         mItems = (EditText)findViewById(R.id.editTextNameItem);
         mPrice = (EditText)findViewById(R.id.editTextHarga);
         mQuantity=(EditText)findViewById(R.id.editTextQuantity);
+        mPicture = (ImageView)findViewById(R.id.imageViewItem);
+        mButtonCam = (Button)findViewById(R.id.buttonCamera);
 
 
         // OnTouchListener that listens for any user touches on a View, implying that they are modifying
@@ -78,6 +96,15 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mItems.setOnTouchListener(mTouchListener);
         mPrice.setOnTouchListener(mTouchListener);
         mQuantity.setOnTouchListener(mTouchListener);
+
+        //take picture from camera
+        mButtonCam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dispatchTakePictureIntent();
+            }
+        });
+
 
 
 //        mDbHelper = new InventoryDbHelper(this);
@@ -164,7 +191,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
             // Show a toast message depending on whether or not the insertion was successful
             if (mUri == null) {
-                // If the row ID is -1, then there was an error with insertion.
+                // If mUri is null then there was an error with insertion.
                 Toast.makeText(this, "Error with saving Inventory", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Item save with row ", Toast.LENGTH_SHORT).show();
@@ -316,8 +343,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         builder.setMessage(R.string.delete_dialog_msg);
         builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // User clicked the "Delete" button, so delete the pet.
-                deletePet();
+                // User clicked the "Delete" button, so delete the  item.
+                deleteItem();
             }
         });
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -334,8 +361,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         android.support.v7.app.AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
-    private void deletePet() {
-        // Only perform the delete if this is an existing pet.
+    private void deleteItem() {
+        // Only perform the delete if this is an existing item.
         if (currentUri != null) {
             // Call the ContentResolver to delete the pet at the given content URI.
             // Pass in null for the selection and selection args because the mCurrentPetUri
@@ -344,15 +371,25 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             // Show a toast message depending on whether or not the delete was successful.
             if (rowsDeleted == 0) {
                 // If no rows were deleted, then there was an error with the delete.
-                Toast.makeText(this, getString(R.string.editor_delete_pet_failed),
+                Toast.makeText(this, getString(R.string.editor_delete_item_failed),
                         Toast.LENGTH_SHORT).show();
             } else {
                 // Otherwise, the delete was successful and we can display a toast.
-                Toast.makeText(this, getString(R.string.editor_delete_pet_successful),
+                Toast.makeText(this, getString(R.string.editor_delete_item_successful),
                         Toast.LENGTH_SHORT).show();
             }
             // Close the activity
             finish();
+        }
+    }
+
+    //Method for getting image from camera
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
         }
     }
 }

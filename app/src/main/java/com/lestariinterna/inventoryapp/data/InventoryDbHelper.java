@@ -3,6 +3,8 @@ package com.lestariinterna.inventoryapp.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
 import com.lestariinterna.inventoryapp.data.InventoryContract.InvEntry;
 
 /**
@@ -33,8 +35,22 @@ public class InventoryDbHelper extends SQLiteOpenHelper{
 
     }
 
+//    /**
+//     * Adding new picture column
+//     */
+//    private static final String DATABASE_ALTER_ITEM_1 = "ALTER TABLE "
+//            + InvEntry.TABLE_NAME + " ADD COLUMN " + InvEntry.COLUMN_INVENTORY_PICTURE+ " BLOB;";
+
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // on upgrade drop older tables
+        db.execSQL("DROP TABLE IF EXISTS " + InvEntry.TABLE_NAME);
+        onCreate(db);
+//        if (oldVersion < 2) {
+//            db.execSQL(DATABASE_ALTER_ITEM_1);
+//        }
+
 
     }
 
@@ -42,6 +58,7 @@ public class InventoryDbHelper extends SQLiteOpenHelper{
     public void onCreate(SQLiteDatabase db) {
         //Execute the sql String to create table
         db.execSQL(SQL_CREATE_ENTRIES);
+        Log.i(LOG_TAG, SQL_CREATE_ENTRIES);
     }
 
     /**
@@ -52,5 +69,7 @@ public class InventoryDbHelper extends SQLiteOpenHelper{
                     +InvEntry._ID +" INTEGER PRIMARY KEY, "
                     +InvEntry.COLUMN_INVENTORY_ITEMS+" TEXT, "
                     +InvEntry.COLUMN_INVENTORY_PRICE+" INTEGER,"
-                    +InvEntry.COLUMN_INVENTORY_QUANTITY+" INTEGER);";
+                    +InvEntry.COLUMN_INVENTORY_QUANTITY+" INTEGER"
+                    + InvEntry.COLUMN_INVENTORY_PICTURE+"BLOB);";
 }
+

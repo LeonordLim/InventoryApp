@@ -63,6 +63,17 @@ public final class InventoryContract {
          */
         public static String COLUMN_INVENTORY_QUANTITY = "quantity";
 
+        /**
+         * Item's picture
+         *
+         * Type: BLOB
+         */
+        public static String COLUMN_INVENTORY_PICTURE = "picture";
+
+
+
+
+
     }
     /*
           Content Authority to identify the provider, which has the same value with the android manifest

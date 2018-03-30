@@ -9,7 +9,10 @@
     <item
         android:id="@+id/deleteItem"
         android:title="Delete all"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/insertDummy"
+        android:title="Insert Dummy"
         app:showAsAction="never"
-
         />
 </menu>
