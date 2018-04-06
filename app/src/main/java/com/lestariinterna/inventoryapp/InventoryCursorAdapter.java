@@ -4,8 +4,6 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,15 +63,16 @@ public class InventoryCursorAdapter extends CursorAdapter {
         final String itemName = cursor.getString(indexItemName);
         final int quantity  = cursor.getInt(indexQuantity);
         int price    = cursor.getInt(indexPrice);
-        if(cursor.getBlob(indexImage)!=  null) {
-            byte[] image = cursor.getBlob(indexImage);
-            Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
-            pictureImageView.setImageBitmap(
-                    Bitmap.createScaledBitmap(
-                            bitmap,100,100,false));
-        }else{
-            pictureImageView.setImageResource(R.drawable.ic_emptybox);
-        }
+        String imageString = cursor.getString(indexImage);
+//        if(cursor.getBlob(indexImage)!=  null) {
+//            byte[] image = cursor.getBlob(indexImage);
+//            Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
+//            pictureImageView.setImageBitmap(
+//                    Bitmap.createScaledBitmap(
+//                            bitmap,100,100,false));
+//        }else{
+//            pictureImageView.setImageResource(R.drawable.ic_emptybox);
+//        }
 
 //        try {
 //            byte[] image = cursor.getBlob(indexImage);
@@ -105,6 +104,8 @@ public class InventoryCursorAdapter extends CursorAdapter {
         nameTextView.setText(itemName);
         hargaTextView.setText(formattedPrice);
         stockTextView.setText(String.valueOf(quantity));
+        Uri itemImage = Uri.parse(imageString);
+        pictureImageView.setImageURI(itemImage);
 
 
 //        //To get the position of item in the listView

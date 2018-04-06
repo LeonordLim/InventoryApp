@@ -24,7 +24,7 @@ public class InventoryDbHelper extends SQLiteOpenHelper{
     /**
      * Database version. If you change the database schema, you must increment the database version.
      */
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 4;
 
     /**
      * Construct a new instance (@Link InventoryDbHelper)
@@ -44,11 +44,15 @@ public class InventoryDbHelper extends SQLiteOpenHelper{
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // on upgrade drop older tables
 
-        if (oldVersion < 2) {
-            db.execSQL(DATABASE_ALTER_ITEM_1);
-        }
+        // on upgrade drop older tables
+        db.execSQL("DROP TABLE IF EXISTS " +InvEntry.TABLE_NAME);
+        onCreate(db);
+//        // on upgrade drop older tables
+//
+//        if (oldVersion < 2) {
+//            db.execSQL(DATABASE_ALTER_ITEM_1);
+//        }
 
 
     }
@@ -68,7 +72,7 @@ public class InventoryDbHelper extends SQLiteOpenHelper{
                     +InvEntry._ID +" INTEGER PRIMARY KEY, "
                     +InvEntry.COLUMN_INVENTORY_ITEMS+" TEXT, "
                     +InvEntry.COLUMN_INVENTORY_PRICE+" INTEGER,"
-                    +InvEntry.COLUMN_INVENTORY_QUANTITY+" INTEGER"
-                    + InvEntry.COLUMN_INVENTORY_PICTURE+"BLOB);";
+                    +InvEntry.COLUMN_INVENTORY_QUANTITY+" INTEGER,"
+                    + InvEntry.COLUMN_INVENTORY_PICTURE+" TEXT);";
 }
 

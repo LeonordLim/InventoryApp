@@ -1,6 +1,7 @@
 package com.lestariinterna.inventoryapp;
 
 import android.app.LoaderManager;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
@@ -9,7 +10,6 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -26,6 +26,8 @@ import com.lestariinterna.inventoryapp.data.InventoryContract;
 import com.lestariinterna.inventoryapp.data.InventoryDbHelper;
 
 import java.io.ByteArrayOutputStream;
+
+import static com.lestariinterna.inventoryapp.data.InventoryDbHelper.LOG_TAG;
 
 public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -243,17 +245,25 @@ public class CatalogActivity extends AppCompatActivity implements LoaderManager.
 
     private void insertDummy(){
 
-        Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.ic_empty_shelter);
-        byte[] bytes = bitmapConverter(bmp);
+//        Bitmap bmp = BitmapFactory.decodeResource(getResources(),R.drawable.ic_empty_shelter);
+//        byte[] bytes = bitmapConverter(bmp);
 //        // Gets the data repository in write mode
 //        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Get Uri for example photo from drawable resource
+        Uri imageUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE +
+                "://" + getResources().getResourcePackageName(R.drawable.ic_empty_item)
+                + '/' + getResources().getResourceTypeName(R.drawable.ic_empty_item) + '/' +
+                getResources().getResourceEntryName(R.drawable.ic_empty_item));
+
+        Log.i(LOG_TAG, "Example photo uri: " + String.valueOf(imageUri));
 
         // Create a new map of values, where column names are the keys
         ContentValues values = new ContentValues();
         values.put(InventoryContract.InvEntry.COLUMN_INVENTORY_ITEMS,"Samsung J2");
         values.put(InventoryContract.InvEntry.COLUMN_INVENTORY_PRICE, 3000000);
         values.put(InventoryContract.InvEntry.COLUMN_INVENTORY_QUANTITY,100);
-        values.put(InventoryContract.InvEntry.COLUMN_INVENTORY_PICTURE,bytes);
+        values.put(InventoryContract.InvEntry.COLUMN_INVENTORY_PICTURE,String.valueOf(imageUri));
 
 //               // Insert the new row, returning the primary key value of the new row
 //        long newRowId = db.insert(InventoryContract.InvEntry.TABLE_NAME, null, values);
